@@ -7,6 +7,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 import math
 
+from digimon.models.items import DBItem
+
 from .. import models
 from .. import deps
 
@@ -39,6 +41,31 @@ async def read_items(
         dict(items=items, page_count=page_count, page=page, size_per_page=SIZE_PER_PAGE)
     )
 
+
+@router.get("/size_per_page={page}")
+async def read_siz(
+    size : int,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+    page: int = 1,
+) -> models.ItemList:
+
+    result = await session.exec(
+        select(models.DBItem).offset((page - 1) * size).limit(size))
+    
+    items = result.all()
+
+    page_count = int(
+        math.ceil(
+            (await session.exec(select(func.count(models.DBItem.id)))).first()
+            / size
+        )
+    )
+
+    print("page_count", page_count)
+    print("items", items)
+    return models.ItemList.from_orm(
+        dict(items=items, page_count=page_count, page=page, size_per_page=size)
+    )
 
 @router.post("")
 async def create_item(
