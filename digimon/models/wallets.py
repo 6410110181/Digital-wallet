@@ -1,29 +1,29 @@
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
-from sqlmodel import Field, SQLModel,Relationship
+from sqlmodel import Field, SQLModel, Relationship
 
 from . import users
 
-class BaseCustomer(BaseModel):
+class BaseWallet(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    name: str
-    description: str | None = None
-    tax_id: str | None = None
+    balance : float
     
-class CreatedCustomer(BaseCustomer):
+class CreatedWallet(BaseWallet):
     pass
 
-class UpdatedCustomer(BaseCustomer):
+class UpdatedWallet(BaseWallet):
     pass
 
-class Customer(BaseCustomer):
+class Wallet(BaseWallet):
     id: int
     user_id: int
     
-class DBCustomer(BaseCustomer, SQLModel, table=True):
-    __tablename__ = "customers"
+    
+    
+class DBWallet(BaseWallet, SQLModel, table=True):
+    __tablename__ = "wallets"
     
     id: Optional[int] = Field(default=None, primary_key=True)
     
@@ -31,10 +31,10 @@ class DBCustomer(BaseCustomer, SQLModel, table=True):
     user: users.DBUser | None = Relationship()
     
 
-class CustomerList(BaseModel):
+class WalletList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
-    customers: list[Customer]
+    wallets: list[Wallet]
     page: int
     page_size: int
     size_per_page: int

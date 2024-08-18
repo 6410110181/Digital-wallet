@@ -69,7 +69,7 @@ async def register_merchant(
 @router.post("/register_customer")
 async def register_customer(
     user_info: models.RegisteredUser,
-    merchant_info: models.CreatedCustomer,
+    customer_info: models.CreatedCustomer,
     session: Annotated[AsyncSession, Depends(models.get_session)],
 ) -> models.Merchant:
 
@@ -94,7 +94,7 @@ async def register_customer(
     session.add(user)
 
     # create new customer
-    dbcustomer = models.DBCustomer(**merchant_info.dict())
+    dbcustomer = models.DBCustomer(**customer_info.dict())
     dbcustomer.user = user
 
     session.add(dbcustomer)
