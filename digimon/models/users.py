@@ -97,6 +97,7 @@ class DBUser(BaseUser, SQLModel, table=True):
     role: UserRole = Field(default=None)
 
     items: list["DBItem"] = Relationship(back_populates="user", cascade_delete=True)
+    wallets: list["DBWallet"] = Relationship(back_populates="user", cascade_delete=True)
     merchant_users: list["DBMerchant"] = Relationship(back_populates="user", cascade_delete=True)
     customer_users: list["DBCustomer"] = Relationship(back_populates="user", cascade_delete=True)
 

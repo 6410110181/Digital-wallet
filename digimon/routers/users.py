@@ -63,10 +63,18 @@ async def register_merchant(
     dbmerchant.user = dbuser
 
     session.add(dbmerchant)
+     # create wallet
+    dbwallet = models.DBWallet()
+    dbwallet.balance = 0.0
+    dbwallet.user = dbuser
+    session.add(dbwallet)
+    
+
     await session.commit()
     
     await session.refresh(dbuser)
     await session.refresh(dbmerchant)
+    await session.refresh(dbwallet)
 
     return models.Merchant.from_orm(dbmerchant)
 
@@ -102,10 +110,17 @@ async def register_customer(
     dbcustomer.user = dbuser
 
     session.add(dbcustomer)
+    # create wallet
+    dbwallet = models.DBWallet()
+    dbwallet.balance = 0.0
+    dbwallet.user = dbuser
+    session.add(dbwallet)
+
     await session.commit()
     
     await session.refresh(dbuser)
     await session.refresh(dbcustomer)
+    await session.refresh(dbwallet)
 
     return models.Customer.from_orm(dbcustomer)
 
@@ -177,17 +192,17 @@ async def update(
     return db_user
 
 
-@router.delete("/{user_id}")
-async def delete_user(
-    user_id: int,
-    current_user: Annotated[models.User, Depends(deps.get_current_user)],
-    session: Annotated[AsyncSession, Depends(models.get_session)],
-) -> dict:
-    db_user = await session.get(models.DBUser, user_id)
-    if db_user:
-        await session.delete(db_user)
-        await session.commit()
+# @router.delete("/{user_id}")
+# async def delete_user(
+#     user_id: int,
+#     current_user: Annotated[models.User, Depends(deps.get_current_user)],
+#     session: Annotated[AsyncSession, Depends(models.get_session)],
+# ) -> dict:
+#     db_user = await session.get(models.DBUser, user_id)
+#     if db_user:
+#         await session.delete(db_user)
+#         await session.commit()
         
         
-        return dict(message="delete success")
-    raise HTTPException(status_code=404, detail="user not found")
+#         return dict(message="delete success")
+#     raise HTTPException(status_code=404, detail="user not found")
