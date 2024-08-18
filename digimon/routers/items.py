@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query,status
 
 from typing import Optional, Annotated
 
@@ -69,17 +69,28 @@ async def read_siz(
 
 @router.post("")
 async def create_item(
-    item: models.CreatedItem,
-    current_user: Annotated[models.User, Depends(deps.get_current_user)],
-    session: Annotated[AsyncSession, Depends(models.get_session)],
-) -> models.Item | None:
-    data = item.dict()
-    dbitem = models.DBItem(**data)
+    item_info: CreatedItem,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> Item | None:
+    # print("create_item", item)
+    
+    # data = item.dict()
+    
+    if current_user.role != "merchant" :
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You not merchant"
+        )
+    dbitem = DBItem.from_orm(item_info)
+    dbitem.user = current_user
+    
     session.add(dbitem)
     await session.commit()
     await session.refresh(dbitem)
 
-    return models.Item.from_orm(dbitem)
+    return Item.from_orm(dbitem)
+
 
 
 @router.get("/{item_id}")
