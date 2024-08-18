@@ -7,7 +7,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 import math
 
-from digimon.models.items import DBItem
+from digimon.models.items import CreatedItem, DBItem, Item
+from digimon.models.users import User
 
 from .. import models
 from .. import deps
@@ -71,7 +72,7 @@ async def read_siz(
 async def create_item(
     item_info: CreatedItem,
     current_user: Annotated[User, Depends(deps.get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)],
+    session: Annotated[AsyncSession, Depends(models.get_session)],
     ) -> Item | None:
     # print("create_item", item)
     

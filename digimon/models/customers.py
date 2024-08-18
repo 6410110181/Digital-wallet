@@ -3,7 +3,8 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field, SQLModel,Relationship
 
-from . import users
+from digimon.models.users import DBUser
+
 
 class BaseCustomer(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -19,16 +20,16 @@ class UpdatedCustomer(BaseCustomer):
     pass
 
 class Customer(BaseCustomer):
-    id: int
+    customer_id: int
     user_id: int
     
 class DBCustomer(BaseCustomer, SQLModel, table=True):
     __tablename__ = "customers"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
+    customer_id: Optional[int] = Field(default=None, primary_key=True)
     
     user_id: int = Field(default=None, foreign_key="users.id")
-    user: users.DBUser | None = Relationship()
+    user: DBUser | None = Relationship()
     
 
 class CustomerList(BaseModel):

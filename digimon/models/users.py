@@ -2,9 +2,11 @@ import datetime
 
 import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field,Relationship
 from enum import Enum
 from passlib.context import CryptContext
+
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -93,7 +95,11 @@ class DBUser(BaseUser, SQLModel, table=True):
 
     password: str
     role: UserRole = Field(default=None)
-    
+
+    items: list["DBItem"] = Relationship(back_populates="user", cascade_delete=True)
+    merchant_users: list["DBMerchant"] = Relationship(back_populates="user", cascade_delete=True)
+    customer_users: list["DBCustomer"] = Relationship(back_populates="user", cascade_delete=True)
+
     register_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     updated_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     last_login_date: datetime.datetime | None = Field(default=None)

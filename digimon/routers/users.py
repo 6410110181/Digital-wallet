@@ -17,7 +17,7 @@ def get_me(current_user: models.User = Depends(deps.get_current_user)) -> models
 
 @router.get("/{user_id}")
 async def get(
-    user_id: str,
+    user_id: int,
     session: Annotated[AsyncSession, Depends(models.get_session)],
     current_user: models.User = Depends(deps.get_current_user),
 ) -> models.User:
@@ -37,41 +37,6 @@ async def register_merchant(
     merchant_info: models.CreatedMerchant,
     session: Annotated[AsyncSession, Depends(models.get_session)],
 ) -> models.Merchant:
-    # check username
-    user_result = await session.execute(
-        select(models.DBUser).where(models.DBUser.username == user_info.username)
-    )
-    user = user_result.scalar_one_or_none()
-
-    if user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="This username already exists.",
-        )
-# create new user
-    user = models.DBUser.from_orm(user_info)
-    await user.set_password(user_info.password)
-    user.role = models.UserRole.merchant
-    
-    session.add(user)
-
-    # create new merchant
-    dbmerchant = models.DBMerchant(**merchant_info.dict())
-    dbmerchant.user = user
-
-    session.add(dbmerchant)
-    await session.commit()
-    
-    await session.refresh(user)
-    await session.refresh(dbmerchant)
-    return models.Merchant.from_orm(dbmerchant)
-
-@router.post("/register_customer")
-async def register_customer(
-    user_info: models.RegisteredUser,
-    customer_info: models.CreatedCustomer,
-    session: Annotated[AsyncSession, Depends(models.get_session)],
-) -> models.Merchant:
 
     # check username
     user_result = await session.execute(
@@ -87,20 +52,59 @@ async def register_customer(
         )
 
     # create new user
-    user = models.DBUser.from_orm(user_info)
-    await user.set_password(user_info.password)
-    user.role = models.UserRole.customer
+    dbuser = models.DBUser.from_orm(user_info)
+    await dbuser.set_password(user_info.password)
+    dbuser.role = models.UserRole.merchant
     
-    session.add(user)
+    session.add(dbuser)
 
-    # create new customer
-    dbcustomer = models.DBCustomer(**customer_info.dict())
-    dbcustomer.user = user
+    # create new merchant
+    dbmerchant = models.DBMerchant.from_orm(merchant_info)
+    dbmerchant.user = dbuser
+
+    session.add(dbmerchant)
+    await session.commit()
+    
+    await session.refresh(dbuser)
+    await session.refresh(dbmerchant)
+
+    return models.Merchant.from_orm(dbmerchant)
+
+@router.post("/register_customer")
+async def register_customer(
+    user_info: models.RegisteredUser,
+    customer_info: models.CreatedCustomer,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+) -> models.Customer:
+
+    # check username
+    user_result = await session.execute(
+        select(models.DBUser).where(models.DBUser.username == user_info.username)
+    )
+
+    user = user_result.scalar_one_or_none()
+
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This username already exists.",
+        )
+
+    # create new user
+    dbuser = models.DBUser.from_orm(user_info)
+    await dbuser.set_password(user_info.password)
+    dbuser.role = models.UserRole.customer
+    
+    session.add(dbuser)
+
+    # create new merchant
+    dbcustomer = models.DBCustomer.from_orm(customer_info)
+    dbcustomer.user = dbuser
 
     session.add(dbcustomer)
     await session.commit()
     
-    await session.refresh(user)
+    await session.refresh(dbuser)
     await session.refresh(dbcustomer)
 
     return models.Customer.from_orm(dbcustomer)
@@ -109,55 +113,81 @@ async def register_customer(
 
 @router.put("/{user_id}/change_password")
 async def change_password(
-    user_id: str,
+    user_id: int,
     password_update: models.ChangedPassword,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
     current_user: models.User = Depends(deps.get_current_user),
-) -> dict():
-
-    result = await session.get(models.DBUser, user_id)
-
-    if user:
+) -> models.User:
+    
+    db_user = await session.get(models.DBUser, user_id)
+    if not db_user:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found this user",
         )
 
-    if not user.verify_password(password_update.current_password):
+    if not db_user.verify_password(password_update.current_password):
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect password",
         )
 
-    user.set_password(password_update.new_password)
-    session.add(user)
+    db_user.set_password(password_update.new_password)
+    session.add(db_user)
     await session.commit()
+    await session.refresh(db_user)
+    print(password_update.current_password)
+    
+    return db_user,
+
 
 
 @router.put("/{user_id}/update")
 async def update(
     request: Request,
-    user_id: str,
+    user_id: int,
     user_update: models.UpdatedUser,
+    password_update: models.ChangedPassword,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
     current_user: models.User = Depends(deps.get_current_user),
 ) -> models.User:
 
-    user = await session.get(models.DBUser, user_id)
+    result = await session.exec(
+        select(models.DBUser).where(models.DBUser.id == user_id)
+    )
+    db_user = result.one_or_none()
 
-    if user:
+    if not db_user:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found this user",
         )
 
-    if not user.verify_password(password_update.current_password):
+    if not await db_user.verify_password(password_update.current_password):
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect password",
         )
 
-    user.update(**set_dict)
-    session.add(user)
+    db_user.sqlmodel_update(user_update)
+    session.add(db_user)
     await session.commit()
-    await session.refresh(user)
+    await session.refresh(db_user)
 
-    return user
+    return db_user
+
+
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: int,
+    current_user: Annotated[models.User, Depends(deps.get_current_user)],
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+) -> dict:
+    db_user = await session.get(models.DBUser, user_id)
+    if db_user:
+        await session.delete(db_user)
+        await session.commit()
+        
+        
+        return dict(message="delete success")
+    raise HTTPException(status_code=404, detail="user not found")

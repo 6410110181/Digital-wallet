@@ -23,19 +23,21 @@ class UpdatedMerchant(BaseMerchant):
     pass
 
 class Merchant(BaseMerchant):
-    id: int
+    merchant_id: int
     user_id: int
 
 class DBMerchant(BaseMerchant, SQLModel, table=True):
     __tablename__ = "merchants"
     
-    id: Optional[int] = Field(default=None, primary_key=True)
+    merchant_id: Optional[int] = Field(default=None, primary_key=True)
 
-    items: list["DBItem"] = Relationship(back_populates="merchant", cascade_delete=True)
+    # items: list["DBItem"] = Relationship(back_populates="merchant", cascade_delete=True)
     
     
     user_id: int = Field(default=None, foreign_key="users.id")
-    user: users.DBUser | None = Relationship()
+    # user: users.DBUser | None = Relationship()
+    user: users.DBUser | None = Relationship(back_populates="merchant_users")
+
 
     
 

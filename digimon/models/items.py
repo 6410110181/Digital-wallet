@@ -15,8 +15,6 @@ class BaseItem(BaseModel):
     price: float = 0.12
     tax: float | None = None
     
-    merchant_id: int
-    
     
 
 
@@ -30,8 +28,7 @@ class UpdatedItem(BaseItem):
 
 class Item(BaseItem):
     id: int
-    merchant_id: int
-    # merchant: merchants.Merchant | None
+
     user_id: int
     
 
@@ -40,12 +37,13 @@ class DBItem(BaseItem, SQLModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     
-    merchant_id: int = Field(default=None, foreign_key="merchants.id")
-    # merchant: merchants.DBMerchant | None = Relationship()
-    merchant: merchants.DBMerchant | None = Relationship(back_populates="items")
+    # merchant_id: int = Field(default=None, foreign_key="merchants.id")
+    # # merchant: merchants.DBMerchant | None = Relationship()
+    # merchant: merchants.DBMerchant | None = Relationship(back_populates="items")
     
     user_id: int = Field(default=None, foreign_key="users.id")
-    user: users.DBUser | None = Relationship()
+    # user: users.DBUser | None = Relationship()
+    user: users.DBUser | None = Relationship(back_populates="items")
     
     
 
