@@ -10,9 +10,12 @@ from ..models import (
     UpdatedWallet,
     WalletList,
     DBWallet,
+    User,
     engine,
     get_session,
 )
+
+from .. import deps
 
 router = APIRouter(prefix="/wallets")
 
@@ -47,28 +50,79 @@ async def read_wallet(
     wallet_id: int,
     session: Annotated[AsyncSession, Depends(get_session)],
     ) -> Wallet:
-    db_wallet = await session.get(DBWallet, wallet_id)
-    if db_wallet:
-        return Wallet.from_orm(db_wallet)
+    dbwallet = await session.get(DBWallet, wallet_id)
+    if dbwallet:
+        return Wallet.from_orm(dbwallet)
     raise HTTPException(status_code=404, detail="Wallet not found")
 
-@router.put("/{wallet_id}")
+@router.put("")
 async def update_wallet(
-    wallet_id: int,
     wallet: UpdatedWallet,
     session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: User = Depends(deps.get_current_user),
     ) -> Wallet:
-    data = wallet.dict()
-
-    db_wallet = await session.get(DBWallet, wallet_id)
     
-    if db_wallet:
+    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
+    result = await session.exec(statement)
+    dbwallet = result.one_or_none()
+    
+    
+    if dbwallet:
         print("update_wallet", wallet)
-        db_wallet.sqlmodel_update(data)
-        session.add(db_wallet)
+        dbwallet.sqlmodel_update(wallet)
+        session.add(dbwallet)
         await session.commit()
-        await session.refresh(db_wallet)
-        return Wallet.from_orm(db_wallet)
+        await session.refresh(dbwallet)
+        return Wallet.from_orm(dbwallet)
+    raise HTTPException(status_code=404, detail="Wallet not found")
+
+
+@router.put("add")
+async def add_balance(
+    wallet: UpdatedWallet,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: User = Depends(deps.get_current_user),
+    ) -> Wallet:
+    
+    
+    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
+    result = await session.exec(statement)
+    dbwallet = result.one_or_none()
+    
+    wallet.balance += dbwallet.balance
+    
+    
+    if dbwallet:
+        print("add_wallet", wallet)
+        dbwallet.sqlmodel_update(wallet)
+        session.add(dbwallet)
+        await session.commit()
+        await session.refresh(dbwallet)
+        return Wallet.from_orm(dbwallet)
+    raise HTTPException(status_code=404, detail="Wallet not found")
+
+@router.put("sub")
+async def sub_balance(
+    wallet: UpdatedWallet,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: User = Depends(deps.get_current_user),
+    ) -> Wallet:
+    
+    
+    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
+    result = await session.exec(statement)
+    dbwallet = result.one_or_none()
+    
+    dbwallet.balance -= wallet.balance
+    
+    
+    if dbwallet:
+        print("sub_wallet", dbwallet)
+        dbwallet.sqlmodel_update(dbwallet)
+        session.add(dbwallet)
+        await session.commit()
+        await session.refresh(dbwallet)
+        return Wallet.from_orm(dbwallet)
     raise HTTPException(status_code=404, detail="Wallet not found")
 
 @router.delete("/{wallet_id}")
@@ -77,9 +131,9 @@ async def delete_wallet(
     session: Annotated[AsyncSession, Depends(get_session)],
     ) -> dict:
 
-    db_wallet = await session.get(DBWallet, wallet_id)
-    if db_wallet:
-        await session.delete(db_wallet)
+    dbwallet = await session.get(DBWallet, wallet_id)
+    if dbwallet:
+        await session.delete(dbwallet)
         await session.commit()
         return dict(message="delete success")
     raise HTTPException(status_code=404, detail="Wallet not found")
