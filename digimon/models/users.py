@@ -3,11 +3,15 @@ import datetime
 import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field
-
+from enum import Enum
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+class UserRole(str, Enum):
+    merchant = "merchant"
+    customer = "customer"
 
 class BaseUser(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -19,6 +23,8 @@ class BaseUser(BaseModel):
 
 class User(BaseUser):
     id: int
+    role: UserRole
+
     last_login_date: datetime.datetime | None = pydantic.Field(
         example="2023-01-01T00:00:00.000000", default=None
     )
@@ -86,7 +92,8 @@ class DBUser(BaseUser, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     password: str
-
+    role: UserRole = Field(default=None)
+    
     register_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     updated_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     last_login_date: datetime.datetime | None = Field(default=None)
