@@ -31,7 +31,7 @@ async def read_items(
 
     page_count = int(
         math.ceil(
-            (await session.exec(select(func.count(models.DBItem.id)))).first()
+            (await session.exec(select(func.count(DBItem.item_id)))).first()
             / SIZE_PER_PAGE
         )
     )
@@ -57,7 +57,7 @@ async def read_siz(
 
     page_count = int(
         math.ceil(
-            (await session.exec(select(func.count(models.DBItem.id)))).first()
+            (await session.exec(select(func.count(models.DBItem.item_id)))).first()
             / size
         )
     )
@@ -83,8 +83,14 @@ async def create_item(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You not merchant"
         )
+    statement = select(DBMerchant).where(DBMerchant.user_id == current_user.id)
+    result = await session.exec(statement)
+    dbmerchant = result.one_or_none()
+
     dbitem = DBItem.from_orm(item_info)
     dbitem.user = current_user
+
+    dbitem.merchant_id = dbmerchant.merchant_id
     
     session.add(dbitem)
     await session.commit()

@@ -79,7 +79,7 @@ async def update_wallet(
 
 @router.put("add")
 async def add_balance(
-    wallet: UpdatedWallet,
+    balance: UpdatedWallet,
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user: User = Depends(deps.get_current_user),
     ) -> Wallet:
@@ -89,12 +89,11 @@ async def add_balance(
     result = await session.exec(statement)
     dbwallet = result.one_or_none()
     
-    wallet.balance += dbwallet.balance
+    balance.balance += dbwallet.balance
     
     
     if dbwallet:
-        print("add_wallet", wallet)
-        dbwallet.sqlmodel_update(wallet)
+        dbwallet.sqlmodel_update(balance)
         session.add(dbwallet)
         await session.commit()
         await session.refresh(dbwallet)
@@ -103,7 +102,7 @@ async def add_balance(
 
 @router.put("sub")
 async def sub_balance(
-    wallet: UpdatedWallet,
+    balance: UpdatedWallet,
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user: User = Depends(deps.get_current_user),
     ) -> Wallet:
@@ -113,12 +112,11 @@ async def sub_balance(
     result = await session.exec(statement)
     dbwallet = result.one_or_none()
     
-    dbwallet.balance -= wallet.balance
+    dbwallet.balance -= balance.balance
     
     
     if dbwallet:
-        print("sub_wallet", dbwallet)
-        dbwallet.sqlmodel_update(dbwallet)
+        dbwallet.sqlmodel_update(balance)
         session.add(dbwallet)
         await session.commit()
         await session.refresh(dbwallet)

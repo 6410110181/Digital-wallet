@@ -31,7 +31,7 @@ class DBMerchant(BaseMerchant, SQLModel, table=True):
     
     merchant_id: Optional[int] = Field(default=None, primary_key=True)
 
-    # items: list["DBItem"] = Relationship(back_populates="merchant", cascade_delete=True)
+    items: list["DBItem"] = Relationship(back_populates="merchant", cascade_delete=True)
     
     
     user_id: int = Field(default=None, foreign_key="users.id")
