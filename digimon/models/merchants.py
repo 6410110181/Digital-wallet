@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field, SQLModel, Relationship
 
-from digimon.models.items import DBItem
+
 
 from . import users
 

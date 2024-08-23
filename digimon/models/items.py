@@ -12,7 +12,7 @@ class BaseItem(BaseModel):
 
     name: str
     description: str | None = None
-    price: float = 0.12
+    price: float = 0.00
     tax: float | None = None
     
     
@@ -38,7 +38,7 @@ class DBItem(BaseItem, SQLModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     
-    merchant_id: int = Field(default=None, foreign_key="merchant.id")
+    merchant_id: int = Field(default=None, foreign_key="merchants.id")
     # # merchant: merchants.DBMerchant | None = Relationship()
     merchant: merchants.DBMerchant | None = Relationship(back_populates="items")
     

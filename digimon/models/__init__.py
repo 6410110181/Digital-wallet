@@ -8,17 +8,17 @@ from sqlalchemy.orm import sessionmaker
 
 from . import items
 from . import merchants
-
+from . import transactions
 from . import wallets
 from . import users
 from . import customers
 
 from .items import *
 from .merchants import *
-
+from .customers import *
+from .transactions import *
 from .wallets import *
 from .users import *
-from .customers import *
 
 
 connect_args = {}
@@ -31,7 +31,7 @@ def init_db(settings):
 
     engine = create_async_engine(
         settings.SQLDB_URL,
-        #echo=True,
+        echo=True,
         future=True,
         connect_args=connect_args,
     )
@@ -39,7 +39,7 @@ def init_db(settings):
 
 async def create_all():
     async with engine.begin() as conn:
-        #await conn.run_sync(SQLModel.metadata.drop_all)
+        # await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
