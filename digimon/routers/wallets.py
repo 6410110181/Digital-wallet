@@ -112,7 +112,7 @@ async def sub_balance(
     result = await session.exec(statement)
     dbwallet = result.one_or_none()
     
-    dbwallet.balance -= balance.balance
+    balance.balance = dbwallet.balance - balance.balance
     
     
     if dbwallet:

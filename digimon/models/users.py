@@ -2,23 +2,23 @@ import datetime
 
 import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
-from sqlmodel import SQLModel, Field,Relationship
-from enum import Enum
+from sqlmodel import SQLModel, Field, Relationship
+
 from passlib.context import CryptContext
 
-
+from enum import Enum
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 class UserRole(str, Enum):
     merchant = "merchant"
     customer = "customer"
+    administrator = "administrator"
 
 class BaseUser(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     email: str = pydantic.Field(example="admin@email.local")
-    username: str = pydantic.Field(example="admin")
+    username: str = pydantic.Field(example="a")
     first_name: str = pydantic.Field(example="Firstname")
     last_name: str = pydantic.Field(example="Lastname")
 
@@ -26,7 +26,7 @@ class BaseUser(BaseModel):
 class User(BaseUser):
     id: int
     role: UserRole
-
+    
     last_login_date: datetime.datetime | None = pydantic.Field(
         example="2023-01-01T00:00:00.000000", default=None
     )
@@ -63,7 +63,7 @@ class ResetedPassword(BaseModel):
 
 
 class RegisteredUser(BaseUser):
-    password: str = pydantic.Field(example="password")
+    password: str = pydantic.Field(example="a")
 
 
 class UpdatedUser(BaseUser):
@@ -94,8 +94,9 @@ class DBUser(BaseUser, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     password: str
+    
     role: UserRole = Field(default=None)
-
+    
     items: list["DBItem"] = Relationship(back_populates="user", cascade_delete=True)
     wallets: list["DBWallet"] = Relationship(back_populates="user", cascade_delete=True)
     merchant_users: list["DBMerchant"] = Relationship(back_populates="user", cascade_delete=True)

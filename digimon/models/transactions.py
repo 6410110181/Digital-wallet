@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
-from sqlmodel import Field, SQLModel,Relationship
+from sqlmodel import Field, SQLModel, Relationship
 
 
 class BaseTransaction(BaseModel):
@@ -11,7 +11,7 @@ class BaseTransaction(BaseModel):
 
     description: str | None = None
     
-
+    
     
 class CreatedTransaction(BaseTransaction):
     pass
@@ -24,7 +24,8 @@ class Transaction(BaseTransaction):
     price: float
     merchant_id: int
     customer_id: int
-
+    
+    
 class DBTransaction(BaseTransaction, SQLModel, table=True):
     __tablename__ = "transactions"
     
@@ -38,8 +39,6 @@ class DBTransaction(BaseTransaction, SQLModel, table=True):
     
     
 
-    
-    
 class TransactionList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     

@@ -30,7 +30,7 @@ class DBWallet(BaseWallet, SQLModel, table=True):
     user_id: int = Field(default=None, foreign_key="users.id")
     # user: users.DBUser | None = Relationship()
     user: users.DBUser | None = Relationship(back_populates="wallets")
-
+    
 
 class WalletList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
