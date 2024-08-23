@@ -8,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 import math
 
 from digimon.models.items import CreatedItem, DBItem, Item
+from digimon.models.merchants import DBMerchant
 from digimon.models.users import User
 
 from .. import models
@@ -31,7 +32,7 @@ async def read_items(
 
     page_count = int(
         math.ceil(
-            (await session.exec(select(func.count(DBItem.item_id)))).first()
+            (await session.exec(select(func.count(DBItem.id)))).first()
             / SIZE_PER_PAGE
         )
     )
@@ -57,7 +58,7 @@ async def read_siz(
 
     page_count = int(
         math.ceil(
-            (await session.exec(select(func.count(models.DBItem.item_id)))).first()
+            (await session.exec(select(func.count(models.DBItem.id)))).first()
             / size
         )
     )
@@ -90,7 +91,7 @@ async def create_item(
     dbitem = DBItem.from_orm(item_info)
     dbitem.user = current_user
 
-    dbitem.merchant_id = dbmerchant.merchant_id
+    dbitem.merchant_id = dbmerchant.id
     
     session.add(dbitem)
     await session.commit()

@@ -27,7 +27,7 @@ class UpdatedItem(BaseItem):
 
 
 class Item(BaseItem):
-    item_id: int
+    id: int
     merchant_id : int
 
     user_id: int
@@ -36,7 +36,7 @@ class Item(BaseItem):
 class DBItem(BaseItem, SQLModel, table=True):
     __tablename__ = "items"
     
-    item_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     
     merchant_id: int = Field(default=None, foreign_key="merchant.id")
     # # merchant: merchants.DBMerchant | None = Relationship()

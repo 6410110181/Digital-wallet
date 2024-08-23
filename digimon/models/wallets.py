@@ -17,7 +17,7 @@ class UpdatedWallet(BaseWallet):
     pass
 
 class Wallet(BaseWallet):
-    wallet_id: int
+    id: int
     user_id: int
     
     
@@ -25,7 +25,7 @@ class Wallet(BaseWallet):
 class DBWallet(BaseWallet, SQLModel, table=True):
     __tablename__ = "wallets"
     
-    wallet_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     
     user_id: int = Field(default=None, foreign_key="users.id")
     # user: users.DBUser | None = Relationship()

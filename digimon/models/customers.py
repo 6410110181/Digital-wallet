@@ -20,13 +20,13 @@ class UpdatedCustomer(BaseCustomer):
     pass
 
 class Customer(BaseCustomer):
-    customer_id: int
+    id: int
     user_id: int
     
 class DBCustomer(BaseCustomer, SQLModel, table=True):
     __tablename__ = "customers"
     
-    customer_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     
     user_id: int = Field(default=None, foreign_key="users.id")
     user: DBUser | None = Relationship()

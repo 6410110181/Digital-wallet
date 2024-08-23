@@ -5,6 +5,8 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field, SQLModel, Relationship
 
+from digimon.models.items import DBItem
+
 from . import users
 
 
@@ -23,13 +25,13 @@ class UpdatedMerchant(BaseMerchant):
     pass
 
 class Merchant(BaseMerchant):
-    merchant_id: int
+    id: int
     user_id: int
 
 class DBMerchant(BaseMerchant, SQLModel, table=True):
     __tablename__ = "merchants"
     
-    merchant_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
     items: list["DBItem"] = Relationship(back_populates="merchant", cascade_delete=True)
     
