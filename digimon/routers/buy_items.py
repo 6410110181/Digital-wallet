@@ -16,22 +16,26 @@ async def buy_item(
     session: Annotated[AsyncSession, Depends(models.get_session)],
     current_user: models.User = Depends(deps.get_current_user),
 ):
-    statement = select(models.DBItem).where(models.DBItem.id == transaction.item_id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(models.DBItem).where(models.DBItem.id == transaction.item_id)
+    )
     dbitem = result.one_or_none()
     
 
-    
-    statement = select(models.DBWallet).where(models.DBWallet.user_id == dbitem.user_id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(models.DBWallet).where(models.DBWallet.user_id == dbitem.user_id)
+    )
     merchant_wallet = result.one_or_none()
     
-    statement = select(models.DBWallet).where(models.DBWallet.user_id == current_user.id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(models.DBWallet).where(models.DBWallet.user_id == current_user.id)
+    )
+
     customer_wallet = result.one_or_none()
     
-    statement = select(models.DBCustomer).where(models.DBCustomer.user_id == current_user.id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(models.DBCustomer).where(models.DBCustomer.user_id == current_user.id)
+    )
     dbcustomer = result.one_or_none()
     
     dbtransaction = models.DBTransaction.from_orm(transaction)

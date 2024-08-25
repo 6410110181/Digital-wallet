@@ -50,7 +50,12 @@ async def read_wallet(
     wallet_id: int,
     session: Annotated[AsyncSession, Depends(get_session)],
     ) -> Wallet:
-    dbwallet = await session.get(DBWallet, wallet_id)
+
+    result = await session.exec(
+        select(DBWallet).where(DBWallet.id == wallet_id),
+    )
+    dbwallet = result.one_or_none()
+
     if dbwallet:
         return Wallet.from_orm(dbwallet)
     raise HTTPException(status_code=404, detail="Wallet not found")
@@ -62,8 +67,10 @@ async def update_wallet(
     current_user: User = Depends(deps.get_current_user),
     ) -> Wallet:
     
-    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(DBWallet).where(DBWallet.user_id == current_user.id)
+    )
+
     dbwallet = result.one_or_none()
     
     
@@ -85,8 +92,10 @@ async def add_balance(
     ) -> Wallet:
     
     
-    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(DBWallet).where(DBWallet.user_id == current_user.id)
+    )
+
     dbwallet = result.one_or_none()
     
     balance.balance += dbwallet.balance
@@ -108,11 +117,12 @@ async def sub_balance(
     ) -> Wallet:
     
     
-    statement = select(DBWallet).where(DBWallet.user_id == current_user.id)
-    result = await session.exec(statement)
+    result = await session.exec(
+        select(DBWallet).where(DBWallet.user_id == current_user.id)
+    )
     dbwallet = result.one_or_none()
     
-    balance.balance = dbwallet.balance - balance.balance
+    dbwallet.balance -= balance.balance
     
     
     if dbwallet:
@@ -129,7 +139,11 @@ async def delete_wallet(
     session: Annotated[AsyncSession, Depends(get_session)],
     ) -> dict:
 
-    dbwallet = await session.get(DBWallet, wallet_id)
+    result = await session.exec(
+        select(DBWallet).where(DBWallet.id == wallet_id)
+    )
+    dbwallet = result.one_or_none()
+
     if dbwallet:
         await session.delete(dbwallet)
         await session.commit()

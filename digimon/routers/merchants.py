@@ -5,7 +5,7 @@ from typing import Optional, Annotated
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from digimon.models.merchants import DBMerchant
+from digimon.models.merchants import DBMerchant, Merchant
 
 from .. import models
 from .. import deps
@@ -47,7 +47,12 @@ async def read_merchants(
 async def read_merchant(
     merchant_id: int, session: Annotated[AsyncSession, Depends(models.get_session)]
 ) -> models.Merchant:
-    db_merchant = await session.get(models.DBMerchant, merchant_id)
+    
+    result = await session.exec(
+        select(DBMerchant).where(DBMerchant.id == merchant_id)
+    )
+    db_merchant = result.one_or_none()
+
     if db_merchant:
         return models.Merchant.from_orm(db_merchant)
     raise HTTPException(status_code=404, detail="Merchant not found")
@@ -60,14 +65,21 @@ async def update_merchant(
     current_user: Annotated[models.User, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(models.get_session)],
 ) -> models.Merchant:
-    data = merchant.dict()
-    db_merchant = await session.get(DBMerchant, merchant_id)
-    db_merchant.sqlmodel_update(data)
-    session.add(db_merchant)
-    await session.commit()
-    await session.refresh(db_merchant)
+    result = await session.exec(
+        select(DBMerchant).where(DBMerchant.id == merchant_id)
+    )
+    db_merchant = result.one_or_none()
 
-    return models.Merchant.from_orm(db_merchant)
+    if db_merchant:
+        print("update_merchant", merchant)
+        db_merchant.sqlmodel_update(merchant)
+        session.add(db_merchant)
+        await session.commit()
+        await session.refresh(db_merchant)
+        
+        return Merchant.from_orm(db_merchant)
+    raise HTTPException(status_code=404, detail="Merchant not found")
+
 
 
 @router.delete("/{merchant_id}")

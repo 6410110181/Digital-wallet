@@ -106,10 +106,13 @@ async def update_item(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Item:
-    data = item.dict()
-    db_item = await session.get(DBItem, item_id)
+    result = await session.exec(
+        select(DBItem).where(DBItem.id == item_id)
+    )
+    db_item = result.one_or_none()
+
     if db_item:
-        db_item.sqlmodel_update(data)
+        db_item.sqlmodel_update(item)
         session.add(db_item)
         await session.commit()
         await session.refresh(db_item)
@@ -124,7 +127,12 @@ async def delete_item(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict:
-    db_item = await session.get(DBItem, item_id)
+    
+    result = await session.exec(
+        select(DBItem).where(DBItem.id == item_id)
+    )
+    db_item = result.one_or_none()
+
     if db_item:
         await session.delete(db_item)
         await session.commit()
