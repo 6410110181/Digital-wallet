@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, Path, Query
+from fastapi import Depends, HTTPException, logger, status, Path, Query
 from fastapi.security import OAuth2PasswordBearer
 
 import typing

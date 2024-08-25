@@ -67,8 +67,8 @@ class RegisteredUser(BaseUser):
 
 
 class UpdatedUser(BaseUser):
-    roles: list[str]
-
+    #roles: list[str]
+    pass
 
 class Token(BaseModel):
     access_token: str
@@ -101,6 +101,7 @@ class DBUser(BaseUser, SQLModel, table=True):
     wallets: list["DBWallet"] = Relationship(back_populates="user", cascade_delete=True)
     merchant_users: list["DBMerchant"] = Relationship(back_populates="user", cascade_delete=True)
     customer_users: list["DBCustomer"] = Relationship(back_populates="user", cascade_delete=True)
+
 
     register_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     updated_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
