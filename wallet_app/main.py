@@ -14,8 +14,8 @@ def create_app():
 
     routers.init_router(app)
 
-    @app.on_event("startup")
-    async def on_startup():
-        await models.create_all()
+    #@app.on_event("startup")
+    #async def on_startup():
+    #   await models.create_all()
 
     return app

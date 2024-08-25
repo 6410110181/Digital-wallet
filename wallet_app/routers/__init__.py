@@ -3,9 +3,7 @@ from . import merchants
 from . import transactions
 from . import wallets
 from . import buy_items
-
 from . import users
-
 from . import authentication
 
 def init_router(app):
