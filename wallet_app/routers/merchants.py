@@ -5,7 +5,7 @@ from typing import Optional, Annotated
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from digimon.models.merchants import DBMerchant, Merchant
+from wallet_app.models.merchants import DBMerchant, Merchant
 
 from .. import models
 from .. import deps
